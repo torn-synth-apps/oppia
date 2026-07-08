@@ -48,7 +48,7 @@ concurrency:
 jobs:
   setup_merge_sha:
     name: Capture develop SHA
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-2vcpu-ubuntu-2204
     outputs:
       develop_sha: ${{ steps.get_sha.outputs.sha }}
     steps:
@@ -58,7 +58,7 @@ jobs:
           SHA=$(git ls-remote https://github.com/oppia/oppia.git refs/heads/develop | awk '{print $1}')
           echo "sha=$SHA" >> "$GITHUB_OUTPUT"
   generate-matrix:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: setup_merge_sha
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
@@ -75,7 +75,7 @@ jobs:
   build:
     name: Build the app, and store build files as an artifact
     needs: setup_merge_sha
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     steps:
       - name: Checkout repository so that local actions can be used
         uses: actions/checkout@v4
@@ -88,7 +88,7 @@ jobs:
 
   run_acceptance_test:
     needs: [build, generate-matrix, setup_merge_sha]
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-2vcpu-ubuntu-2204
     strategy:
       fail-fast: false
       matrix:

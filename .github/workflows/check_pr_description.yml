@@ -9,7 +9,7 @@ jobs:
   check_pr_description:
     permissions:
       pull-requests: write
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     steps:
       - name: Setup Node.js
         uses: actions/setup-node@v3

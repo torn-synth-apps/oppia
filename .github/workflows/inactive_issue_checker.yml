@@ -13,7 +13,7 @@ permissions: read-all
 jobs:
   check-inactive-issues:
     name: Check Inactive Issues
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-2vcpu-ubuntu-2204
     
     steps:
     - name: Checkout repository

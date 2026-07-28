@@ -16,7 +16,7 @@ permissions: read-all
 jobs:
   oppiabot:
     name: Verify CLA
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     permissions:
       issues: write
       pull-requests: write

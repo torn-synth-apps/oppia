@@ -27,7 +27,7 @@ concurrency:
 jobs:
   setup_merge_sha:
     name: Capture develop SHA
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     outputs:
       develop_sha: ${{ steps.get_sha.outputs.sha }}
     steps:
@@ -39,7 +39,7 @@ jobs:
   backend_type_checks:
     name: Backend
     needs: setup_merge_sha
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     # Skip the job if we were only launched to cancel running jobs via the concurrency key above.
     if: ${{ ! (
         (github.event_name == 'merge_group' && github.event.action == 'destroyed')
@@ -63,7 +63,7 @@ jobs:
   frontend_type_checks:
     name: Frontend
     needs: setup_merge_sha
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     # Skip the job if we were only launched to cancel running jobs via the concurrency key above.
     if: ${{ ! (
         (github.event_name == 'merge_group' && github.event.action == 'destroyed')

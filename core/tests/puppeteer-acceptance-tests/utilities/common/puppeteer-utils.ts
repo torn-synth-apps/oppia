@@ -890,6 +890,64 @@ export class BaseUser {
   }
 
   /**
+   * This function replaces the contents of a schema-based field with the given
+   * text and confirms that the text survived.
+   *
+   * Schema-based editors push their value back into the DOM asynchronously:
+   * the unicode editor defers its change notification with a setTimeout, and
+   * wrappers such as the subtitled-unicode editor re-bind the (still stale)
+   * model value into the field on the next change-detection run. Keystrokes
+   * that arrive faster than that round trip therefore get overwritten by the
+   * stale value, leaving the field holding only the first few characters. So,
+   * we type slowly enough for the model to keep up, and retry the whole entry
+   * if the field still ends up with the wrong text.
+   * @param selector The CSS selector or handle of the field.
+   * @param text The text the field should end up containing.
+   */
+  async typeInFieldAndEnsureValue(
+    selector: string | ElementHandle<Element>,
+    text: string
+  ): Promise<void> {
+    const maximumAttempts = 3;
+    let lastValue = '';
+
+    for (let attempt = 1; attempt <= maximumAttempts; attempt++) {
+      const element =
+        typeof selector === 'string'
+          ? await this.getElementInParent(selector)
+          : selector;
+      await this.waitForElementToStabilize(element);
+      await this.waitForElementToBeClickable(element);
+
+      // Select the existing contents so that typing replaces them.
+      await element.click({clickCount: 3});
+      await this.page.keyboard.press('Backspace');
+      await element.type(text, {delay: 50});
+
+      try {
+        await this.page.waitForFunction(
+          (field: HTMLInputElement | HTMLTextAreaElement, value: string) => {
+            return field.value.trim() === value;
+          },
+          {timeout: 5000},
+          element,
+          text
+        );
+        return;
+      } catch {
+        lastValue = await element.evaluate(
+          field => (field as HTMLInputElement).value
+        );
+      }
+    }
+
+    throw new Error(
+      `Field does not have the expected value "${text}" after ` +
+        `${maximumAttempts} attempts. Found "${lastValue}".`
+    );
+  }
+
+  /**
    * This function converts a given date string into ISO format (YYYY-MM-DD).
    */
   private toISODate(dateString: string): string {

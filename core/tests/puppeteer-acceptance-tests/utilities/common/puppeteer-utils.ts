@@ -809,8 +809,14 @@ export class BaseUser {
    * The function selects all text content and delete it.
    */
   async clearAllTextFrom(selector: string): Promise<void> {
-    // Clicking three times on a line of text selects all the text.
     const element = await this.getElementInParent(selector);
+    // Fields inside modals and dynamically inserted forms animate into place,
+    // and a click dispatched while the field is still moving lands wherever
+    // the field used to be. The field then never receives focus, the
+    // selection keystrokes below go elsewhere, and the stale text silently
+    // survives this "clear". Waiting for the field to settle keeps the click
+    // on target.
+    await this.waitForElementToStabilize(element);
     await this.waitForElementToBeClickable(element);
     await element.click();
     await this.page.keyboard.down('Control');

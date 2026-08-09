@@ -28,6 +28,18 @@ import {
 } from '@angular/core';
 import Headroom from 'headroom.js';
 
+// Headroom registers its scroll tracker 100ms after init() is called, so that
+// the browser has a chance to restore a previously saved scroll position
+// first. Its destroy() dereferences that tracker without checking whether it
+// exists, so tearing an instance down within this window throws.
+const SCROLL_TRACKER_REGISTRATION_DELAY_MSECS = 100;
+
+// Headroom's type definitions do not expose the internal scroll tracker, so
+// this type is used to check whether it has been registered yet.
+type HeadroomWithScrollTracker = Headroom & {
+  scrollTracker?: {destroy: () => void};
+};
+
 @Directive({
   selector: '[headroom]',
 })
@@ -60,6 +72,33 @@ export class HeadroomDirective implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.headroom.destroy();
+    if (this.destroyHeadroomIfTrackerRegistered()) {
+      return;
+    }
+
+    // The scroll tracker has not been registered yet. Destroying now would
+    // throw, and when the directive is destroyed as part of a route change
+    // (which happens on pages that redirect as soon as their data loads), that
+    // error aborts the in-flight navigation. Retrying once the registration
+    // has happened keeps the scroll listeners from leaking. This timer is
+    // created after Headroom's own one, so it always fires later.
+    setTimeout(() => {
+      this.destroyHeadroomIfTrackerRegistered();
+    }, SCROLL_TRACKER_REGISTRATION_DELAY_MSECS);
+  }
+
+  /**
+   * Destroys the Headroom instance, but only once its scroll tracker has been
+   * registered, since destroy() throws otherwise.
+   * @returns Whether the instance was destroyed.
+   */
+  private destroyHeadroomIfTrackerRegistered(): boolean {
+    const headroom = this.headroom as HeadroomWithScrollTracker;
+    if (headroom.scrollTracker === undefined) {
+      return false;
+    }
+
+    headroom.destroy();
+    return true;
   }
 }

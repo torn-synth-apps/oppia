@@ -1614,9 +1614,7 @@ export class ExplorationEditor extends BaseUser {
 
     // Update placeholder text.
     if (placeHolderText) {
-      await inputElements[0].click({clickCount: 3});
-      await inputElements[0].type(placeHolderText);
-      await this.expectElementValueToBe(inputElements[0], placeHolderText);
+      await this.typeInFieldAndEnsureValue(inputElements[0], placeHolderText);
     }
 
     // Update height in rows.

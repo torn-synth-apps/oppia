@@ -266,8 +266,9 @@ export default {
     '../oppia_full_stack_test_failure_screenshots/acceptance'
   ),
   TEST_DOWNLOAD_DIR: path.resolve('../oppia_acceptance_test_downloads'),
-  TEST_SNAPSHOTS_DIR:
-    '/home/runner/work/oppia/oppia/core/tests/playwright-acceptance-tests',
+  // This path is resolved relative to the oppia/ folder's root path so that
+  // it stays correct regardless of where the CI runner checks out the repo.
+  TEST_SNAPSHOTS_DIR: path.resolve('core/tests/playwright-acceptance-tests'),
 };
 
 export const FILEPATHS = {

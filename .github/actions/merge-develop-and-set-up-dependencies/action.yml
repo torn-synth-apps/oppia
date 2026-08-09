@@ -29,7 +29,7 @@ runs:
 
     - name: Write the exact Python version to a file for cache-busting.
       run: |
-        echo "${{ steps.setup_python.outputs.python-version }}" > /home/runner/work/.pyversion
+        echo "${{ steps.setup_python.outputs.python-version }}" > ${{ runner.workspace }}/.pyversion
       shell: bash
 
     - name: Install third-party Python dev dependencies
@@ -91,20 +91,20 @@ runs:
         # the cache key because it has the version numbers for pip, pip-tools
         # and setuptools. We include scripts/common.py because it has version
         # numbers for dependencies like Elasticsearch.
-        key: ${{ runner.os }}-proddeps-${{ hashFiles('/home/runner/work/.pyversion', 'yarn.lock', 'requirements_dev.txt', 'requirements.txt', 'dependencies.json',  'scripts/install_python_dev_dependencies.py', 'scripts/common.py', 'scripts/linters/custom_eslint_checks/**') }}
+        key: ${{ runner.os }}-proddeps-${{ hashFiles(format('{0}/.pyversion', runner.workspace), 'yarn.lock', 'requirements_dev.txt', 'requirements.txt', 'dependencies.json',  'scripts/install_python_dev_dependencies.py', 'scripts/common.py', 'scripts/linters/custom_eslint_checks/**') }}
         path: |
-          /home/runner/work/oppia/oppia_tools
-          /home/runner/work/oppia/yarn_cache
-          /home/runner/work/oppia/oppia/node_modules
-          /home/runner/work/oppia/oppia/third_party/python_libs
-          /home/runner/work/oppia/oppia/third_party/static
+          ${{ runner.workspace }}/oppia_tools
+          ${{ runner.workspace }}/yarn_cache
+          ${{ github.workspace }}/node_modules
+          ${{ github.workspace }}/third_party/python_libs
+          ${{ github.workspace }}/third_party/static
 
     - name: Print requirements files (before)
       run: |
         echo "Contents of requirements_dev.txt (before):"
-        cat /home/runner/work/oppia/oppia/requirements_dev.txt
+        cat ${{ github.workspace }}/requirements_dev.txt
         echo "Contents of requirements.txt (before):"
-        cat /home/runner/work/oppia/oppia/requirements.txt
+        cat ${{ github.workspace }}/requirements.txt
       shell: bash
 
     - name: Install third-party libs on cache miss (retries on error)
@@ -120,9 +120,9 @@ runs:
     - name: Print requirements files (after)
       run: |
         echo "Contents of requirements_dev.txt (after):"
-        cat /home/runner/work/oppia/oppia/requirements_dev.txt
+        cat ${{ github.workspace }}/requirements_dev.txt
         echo "Contents of requirements.txt (after):"
-        cat /home/runner/work/oppia/oppia/requirements.txt
+        cat ${{ github.workspace }}/requirements.txt
       shell: bash
 
     - name: Check Yarn Cache

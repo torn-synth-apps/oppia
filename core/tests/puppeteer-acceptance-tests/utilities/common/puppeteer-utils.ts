@@ -809,8 +809,14 @@ export class BaseUser {
    * The function selects all text content and delete it.
    */
   async clearAllTextFrom(selector: string): Promise<void> {
-    // Clicking three times on a line of text selects all the text.
     const element = await this.getElementInParent(selector);
+    // Fields inside modals and dynamically inserted forms animate into place,
+    // and a click dispatched while the field is still moving lands wherever
+    // the field used to be. The field then never receives focus, the
+    // selection keystrokes below go elsewhere, and the stale text silently
+    // survives this "clear". Waiting for the field to settle keeps the click
+    // on target.
+    await this.waitForElementToStabilize(element);
     await this.waitForElementToBeClickable(element);
     await element.click();
     await this.page.keyboard.down('Control');
@@ -884,6 +890,64 @@ export class BaseUser {
   }
 
   /**
+   * This function replaces the contents of a schema-based field with the given
+   * text and confirms that the text survived.
+   *
+   * Schema-based editors push their value back into the DOM asynchronously:
+   * the unicode editor defers its change notification with a setTimeout, and
+   * wrappers such as the subtitled-unicode editor re-bind the (still stale)
+   * model value into the field on the next change-detection run. Keystrokes
+   * that arrive faster than that round trip therefore get overwritten by the
+   * stale value, leaving the field holding only the first few characters. So,
+   * we type slowly enough for the model to keep up, and retry the whole entry
+   * if the field still ends up with the wrong text.
+   * @param selector The CSS selector or handle of the field.
+   * @param text The text the field should end up containing.
+   */
+  async typeInFieldAndEnsureValue(
+    selector: string | ElementHandle<Element>,
+    text: string
+  ): Promise<void> {
+    const maximumAttempts = 3;
+    let lastValue = '';
+
+    for (let attempt = 1; attempt <= maximumAttempts; attempt++) {
+      const element =
+        typeof selector === 'string'
+          ? await this.getElementInParent(selector)
+          : selector;
+      await this.waitForElementToStabilize(element);
+      await this.waitForElementToBeClickable(element);
+
+      // Select the existing contents so that typing replaces them.
+      await element.click({clickCount: 3});
+      await this.page.keyboard.press('Backspace');
+      await element.type(text, {delay: 50});
+
+      try {
+        await this.page.waitForFunction(
+          (field: HTMLInputElement | HTMLTextAreaElement, value: string) => {
+            return field.value.trim() === value;
+          },
+          {timeout: 5000},
+          element,
+          text
+        );
+        return;
+      } catch {
+        lastValue = await element.evaluate(
+          field => (field as HTMLInputElement).value
+        );
+      }
+    }
+
+    throw new Error(
+      `Field does not have the expected value "${text}" after ` +
+        `${maximumAttempts} attempts. Found "${lastValue}".`
+    );
+  }
+
+  /**
    * This function converts a given date string into ISO format (YYYY-MM-DD).
    */
   private toISODate(dateString: string): string {
@@ -930,6 +994,28 @@ export class BaseUser {
   async select(selector: string, option: string): Promise<void> {
     await this.page.waitForSelector(selector);
     await this.waitForElementToBeClickable(selector);
+    // Some dropdowns (e.g. the outcome destination selector) render before
+    // their options are populated, since the options are filled in from a
+    // setTimeout callback. Selecting a value that is not present yet is a
+    // silent no-op in Puppeteer, which leaves the dropdown unchanged and makes
+    // the subsequent assertions time out. So, we wait for the option to exist
+    // before selecting it.
+    await this.page.waitForFunction(
+      (dropdownSelector: string, optionValue: string) => {
+        const dropdown = document.querySelector(
+          dropdownSelector
+        ) as HTMLSelectElement | null;
+        return (
+          dropdown !== null &&
+          Array.from(dropdown.options).some(
+            dropdownOption => dropdownOption.value === optionValue
+          )
+        );
+      },
+      {},
+      selector,
+      option
+    );
     await this.page.select(selector, option);
   }
 

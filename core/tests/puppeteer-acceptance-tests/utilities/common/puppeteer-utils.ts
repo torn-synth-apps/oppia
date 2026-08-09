@@ -930,6 +930,28 @@ export class BaseUser {
   async select(selector: string, option: string): Promise<void> {
     await this.page.waitForSelector(selector);
     await this.waitForElementToBeClickable(selector);
+    // Some dropdowns (e.g. the outcome destination selector) render before
+    // their options are populated, since the options are filled in from a
+    // setTimeout callback. Selecting a value that is not present yet is a
+    // silent no-op in Puppeteer, which leaves the dropdown unchanged and makes
+    // the subsequent assertions time out. So, we wait for the option to exist
+    // before selecting it.
+    await this.page.waitForFunction(
+      (dropdownSelector: string, optionValue: string) => {
+        const dropdown = document.querySelector(
+          dropdownSelector
+        ) as HTMLSelectElement | null;
+        return (
+          dropdown !== null &&
+          Array.from(dropdown.options).some(
+            dropdownOption => dropdownOption.value === optionValue
+          )
+        );
+      },
+      {},
+      selector,
+      option
+    );
     await this.page.select(selector, option);
   }
 

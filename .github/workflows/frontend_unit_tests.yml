@@ -81,9 +81,9 @@ jobs:
       - name: Describe filesystem
         run: |
           pwd
-          ls /home/runner/work
-          ls /home/runner/work/oppia
-          ls /home/runner/work/oppia/oppia
+          ls ${{ runner.workspace }}/..
+          ls ${{ runner.workspace }}
+          ls ${{ github.workspace }}
           echo $GITHUB_WORKSPACE
       - name: Suppress ENOSPC error from chokidar file watcher. See https://stackoverflow.com/a/32600959.
         run: echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
@@ -95,7 +95,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-coverage-${{ matrix.num_runs }}
-          path: /home/runner/work/oppia/karma_coverage_reports
+          path: ${{ runner.workspace }}/karma_coverage_reports
     permissions:
       pull-requests: write
   report-failure:

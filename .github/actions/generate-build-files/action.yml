@@ -14,12 +14,12 @@ runs:
       with:
         key: ${{ runner.os }}-build-files-${{ inputs.prod-env != 'false' && 'prod' || 'dev' }}-${{ github.sha }}
         path: |
-          /home/runner/work/oppia/oppia/build
-          /home/runner/work/oppia/oppia/webpack_bundles
-          /home/runner/work/oppia/oppia/app.yaml
-          /home/runner/work/oppia/oppia/assets/hashes.json
-          /home/runner/work/oppia/oppia/dist
-          /home/runner/work/oppia/oppia/third_party/generated
+          ${{ github.workspace }}/build
+          ${{ github.workspace }}/webpack_bundles
+          ${{ github.workspace }}/app.yaml
+          ${{ github.workspace }}/assets/hashes.json
+          ${{ github.workspace }}/dist
+          ${{ github.workspace }}/third_party/generated
     - name: Build Webpack (prod)
       if: steps.restore_build_files_cache.outputs.cache-hit != 'true' && inputs.prod-env != 'false'
       run: python -m scripts.build --prod_env

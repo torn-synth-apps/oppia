@@ -96,7 +96,7 @@ runs:
       uses: actions/upload-artifact@v4
       with:
         name: failure-point-snapshots_${{ inputs.modified-suite-name-for-uploads }}
-        path: /home/runner/work/oppia/oppia_full_stack_test_failure_screenshots/acceptance
+        path: ${{ runner.workspace }}/oppia_full_stack_test_failure_screenshots/acceptance
 
     - name: Upload test diff screenshots
       # We need to pass !cancelled() because if not, GitHub will implicitly use success(),
@@ -109,7 +109,7 @@ runs:
         name: diff-snapshots_${{ inputs.modified-suite-name-for-uploads }}
         # Note: The path must be kept in sync with the one specified in
         # core/tests/puppeteer-acceptance-tests/utilities/common/puppeteer-utils.ts
-        path: /home/runner/work/oppia/oppia/core/tests/puppeteer-acceptance-tests/${{ inputs.test-suite }}/prod-${{ inputs.viewport-type }}-screenshots/diff-snapshots
+        path: ${{ github.workspace }}/core/tests/puppeteer-acceptance-tests/${{ inputs.test-suite }}/prod-${{ inputs.viewport-type }}-screenshots/diff-snapshots
     
     - name: Upload test new screenshots
       # We need to pass !cancelled() because if not, GitHub will implicitly use success(),
@@ -122,13 +122,13 @@ runs:
         name: new-snapshots_${{ inputs.modified-suite-name-for-uploads }}
         # Note: The path must be kept in sync with the one specified in
         # core/tests/puppeteer-acceptance-tests/utilities/common/puppeteer-utils.ts
-        path: /home/runner/work/oppia/oppia/core/tests/puppeteer-acceptance-tests/${{ inputs.test-suite }}/prod-${{ inputs.viewport-type }}-screenshots/new-snapshots
+        path: ${{ github.workspace }}/core/tests/puppeteer-acceptance-tests/${{ inputs.test-suite }}/prod-${{ inputs.viewport-type }}-screenshots/new-snapshots
 
     - name: Check for video recordings and test results
       shell: bash
       run: |
-        ls /home/runner/work/oppia/oppia_full_stack_test_video_recordings/acceptance/** \
-        || ls /home/runner/work/oppia/oppia_full_stack_test_playwright_results/ \
+        ls ${{ runner.workspace }}/oppia_full_stack_test_video_recordings/acceptance/** \
+        || ls ${{ runner.workspace }}/oppia_full_stack_test_playwright_results/ \
         || echo "No video recordings and test results found."
 
     - name: Upload test recordings
@@ -140,7 +140,7 @@ runs:
       uses: actions/upload-artifact@v4
       with:
         name: video-recordings_${{ inputs.modified-suite-name-for-uploads }}
-        path: /home/runner/work/oppia/oppia_full_stack_test_video_recordings/acceptance/${{ inputs.viewport-type == 'mobile' && 'mobile' || 'desktop' }}-*
+        path: ${{ runner.workspace }}/oppia_full_stack_test_video_recordings/acceptance/${{ inputs.viewport-type == 'mobile' && 'mobile' || 'desktop' }}-*
         if-no-files-found: warn
 
     - name: Upload Playwright test results
@@ -148,5 +148,5 @@ runs:
       uses: actions/upload-artifact@v4
       with:
         name: playwright-results_${{ inputs.modified-suite-name-for-uploads }}
-        path: /home/runner/work/oppia/oppia_full_stack_test_playwright_results/
+        path: ${{ runner.workspace }}/oppia_full_stack_test_playwright_results/
         if-no-files-found: warn

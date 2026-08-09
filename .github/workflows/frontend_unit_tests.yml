@@ -27,7 +27,7 @@ concurrency:
 jobs:
   setup_merge_sha:
     name: Capture develop SHA
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     outputs:
       develop_sha: ${{ steps.get_sha.outputs.sha }}
     steps:
@@ -39,7 +39,7 @@ jobs:
   generate-job-strategy-matrix:
     name: Generate job strategy matrix
     needs: setup_merge_sha
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     # Skip the job if we were only launched to cancel running jobs via the concurrency key above.
     if: ${{ ! (
         (github.event_name == 'merge_group' && github.event.action == 'destroyed')
@@ -65,7 +65,7 @@ jobs:
   frontend-karma-tests:
     name: Run all tests
     needs: [generate-job-strategy-matrix, setup_merge_sha]
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     strategy:
       max-parallel: 25
       fail-fast: ${{ github.event_name == 'merge_group' }}
@@ -101,7 +101,7 @@ jobs:
   report-failure:
     name: Report failure
     needs: frontend-karma-tests
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     if: ${{ failure() && github.event_name == 'push' && github.repository == 'oppia/oppia' && github.ref == 'refs/heads/develop'}}
     steps:
       - name: Checkout repository

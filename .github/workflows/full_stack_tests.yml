@@ -27,7 +27,7 @@ concurrency:
 jobs:
   setup_merge_sha:
     name: Capture develop SHA
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     outputs:
       develop_sha: ${{ steps.get_sha.outputs.sha }}
     steps:
@@ -39,7 +39,7 @@ jobs:
   e2e_and_acceptance_coverage:
     name: Verify all e2e/acceptance tests are included
     needs: setup_merge_sha
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     # Skip the job if we were only launched to cancel running jobs via the concurrency key above.
     if: ${{ ! (
         (github.event_name == 'merge_group' && github.event.action == 'destroyed')
@@ -64,7 +64,7 @@ jobs:
   check_test_suites_to_run:
     name: Compute which tests to run
     needs: setup_merge_sha
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     # Skip the job if we were only launched to cancel running jobs via the concurrency key above.
     if: ${{ ! (
         (github.event_name == 'merge_group' && github.event.action == 'destroyed')
@@ -98,7 +98,7 @@ jobs:
   build:
     name: Build the app, and store build files as an artifact
     needs: [check_test_suites_to_run, setup_merge_sha]
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     if: ${{ fromJSON(needs.check_test_suites_to_run.outputs.TEST_SUITES_TO_RUN).e2e.count > 0 ||
             fromJSON(needs.check_test_suites_to_run.outputs.TEST_SUITES_TO_RUN).lighthouse_performance.count > 0 ||
             fromJSON(needs.check_test_suites_to_run.outputs.TEST_SUITES_TO_RUN).acceptance.count > 0 }}
@@ -113,7 +113,7 @@ jobs:
         uses: ./.github/actions/generate-build-files
   e2e_test:
     needs: [check_test_suites_to_run, build, setup_merge_sha]
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     if: ${{ 
         fromJSON(needs.check_test_suites_to_run.outputs.TEST_SUITES_TO_RUN).e2e.count > 0 
         && github.event_name != 'merge_group'
@@ -213,7 +213,7 @@ jobs:
           webhook-url: ${{ secrets.BUILD_FAILURE_ROOM_WEBHOOK_URL }}
   acceptance_test:
     needs: [check_test_suites_to_run, build, setup_merge_sha]
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     if: ${{ fromJSON(needs.check_test_suites_to_run.outputs.TEST_SUITES_TO_RUN).acceptance.count > 0 }}
     strategy:
       # Fast fail only if it's a merge queue.
@@ -343,7 +343,7 @@ jobs:
         fromJSON(needs.check_test_suites_to_run.outputs.TEST_SUITES_TO_RUN).lighthouse_accessibility.count > 0
         && github.event_name != 'merge_group'
       }}
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     strategy:
       fail-fast: ${{ github.event_name == 'merge_group' }}
       matrix:
@@ -373,7 +373,7 @@ jobs:
           webhook-url: ${{ secrets.BUILD_FAILURE_ROOM_WEBHOOK_URL }}
   lighthouse_performance_test:
     needs: [check_test_suites_to_run, build, setup_merge_sha]
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     if: ${{
         fromJSON(needs.check_test_suites_to_run.outputs.TEST_SUITES_TO_RUN).lighthouse_performance.count > 0
         && github.event_name != 'merge_group'
@@ -430,7 +430,7 @@ jobs:
       - lighthouse_performance_test
       - setup_merge_sha
     if: always()
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     steps:
       - name: Checkout repository so that local actions can be used
         if: github.event_name != 'merge_group'
@@ -467,7 +467,7 @@ jobs:
   trigger_build_and_deploy:
     name: Trigger build and deploy
     needs: [check_workflow_statuses]
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     # Only broadcast this for commits to develop branch in the oppia/oppia repo.
     # Further checks to ensure that the relevant commit can be deployed (e.g.
     # the commit is not an older commit than the latest deployed commit) are

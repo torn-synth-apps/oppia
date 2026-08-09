@@ -30,7 +30,7 @@ on:
 jobs:
   setup_merge_sha:
     name: Capture develop SHA
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     outputs:
       develop_sha: ${{ steps.get_sha.outputs.sha }}
     steps:
@@ -43,7 +43,7 @@ jobs:
   build:
     name: Build the app (${{ github.event.inputs.env-mode }}), and store build files as an artifact
     needs: setup_merge_sha
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     steps:
       - name: Checkout repository so that local actions can be used
         uses: actions/checkout@v4
@@ -59,7 +59,7 @@ jobs:
   check_test_suites_to_run:
     name: Compute which tests to run
     needs: setup_merge_sha
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     outputs:
       TEST_SUITES_TO_RUN: ${{ steps.compute_test_suites.outputs.TEST_SUITES_TO_RUN }}
     steps:
@@ -76,7 +76,7 @@ jobs:
 
   update_snapshots_playwright_acceptance_tests:
     needs: [build, check_test_suites_to_run, setup_merge_sha]
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     strategy:
       matrix:
         suite: ${{ github.event.inputs.run-mode == 'single' && fromJson(format('[{{"name":"{0}"}}]', github.event.inputs.test-suite)) || fromJson(needs.check_test_suites_to_run.outputs.TEST_SUITES_TO_RUN).acceptance_playwright.suites }}
@@ -180,7 +180,7 @@ jobs:
     name: Consolidate all snapshots into a single artifact
     needs: update_snapshots_playwright_acceptance_tests
     if: ${{ !cancelled() }}
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     steps:
       - name: Download all per-suite snapshot artifacts
         uses: actions/download-artifact@v4

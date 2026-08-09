@@ -8,7 +8,7 @@ on:
 permissions: read-all
 jobs:
   detect_force_push:
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     permissions:
         issues: write
         pull-requests: write

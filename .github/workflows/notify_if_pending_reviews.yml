@@ -13,7 +13,7 @@ permissions: read-all
 jobs:
   send_notifications:
     name: Send pending review notifications
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     permissions:
       discussions: write
     steps:

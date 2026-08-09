@@ -27,7 +27,7 @@ concurrency:
 jobs:
   setup_merge_sha:
     name: Capture develop SHA
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     outputs:
       develop_sha: ${{ steps.get_sha.outputs.sha }}
     steps:
@@ -39,7 +39,7 @@ jobs:
   run_backend_associated_test_file_checks:
     name: Verify associated test files
     needs: setup_merge_sha
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     # Skip the job if we were only launched to cancel running jobs via the concurrency key above.
     if: ${{ ! (
         (github.event_name == 'merge_group' && github.event.action == 'destroyed')
@@ -64,7 +64,7 @@ jobs:
   run_tests:
     name: Shard ${{ matrix.shard }}
     needs: setup_merge_sha
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     # Skip the job if we were only launched to cancel running jobs via the concurrency key above.
     if: ${{ ! (
         (github.event_name == 'merge_group' && github.event.action == 'destroyed')
@@ -109,7 +109,7 @@ jobs:
   check_combined_coverage:
     name: Check coverage
     needs: [run_tests, setup_merge_sha]
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     steps:
       - name: Checkout repository so that local actions can be used
         uses: actions/checkout@v4
@@ -172,7 +172,7 @@ jobs:
   check_backend_test_times:
     name: Check test times
     needs: [run_tests, setup_merge_sha]
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     steps:
       - name: Checkout repository so that local actions can be used
         uses: actions/checkout@v4

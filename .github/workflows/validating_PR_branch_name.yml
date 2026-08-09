@@ -7,7 +7,7 @@ on:
 permissions: read-all
 jobs:
   validate_branch_name:
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     permissions:
         pull-requests: write
     steps:
